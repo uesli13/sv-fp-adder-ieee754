@@ -12,18 +12,19 @@ module exponent_calc(
     output logic       sign_exp_diff
 );
 
-always_comb begin: calculate_difference
-    // Case exponent of a is greater or equal to the exponent of b
-    if(Ea >= Eb) begin
-        max_exp = Ea;
-        exp_diff = 9'(Ea) - 9'(Eb);
-        sign_exp_diff = 1'b1;
+    always_comb begin: calculate_difference
+        // Case exponent of a is greater or equal to the exponent of b
+        // When Ea == Eb, we choose A as "larger"
+        if(Ea >= Eb) begin
+            max_exp = Ea;
+            exp_diff = 9'(Ea) - 9'(Eb);
+            sign_exp_diff = 1'b1;
+        end
+        // Case exponent of b is greater than the exponent of a
+        else begin
+            max_exp = Eb;
+            exp_diff = 9'(Eb) - 9'(Ea);
+            sign_exp_diff = 1'b0;
+        end
     end
-    // Case exponent of b is greater than the exponent of a
-    else     begin
-        max_exp = Eb;
-        exp_diff = 9'(Eb) - 9'(Ea);
-        sign_exp_diff = 1'b0;
-    end
-end
 endmodule

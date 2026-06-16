@@ -6,9 +6,10 @@
 // ============================================================================
 
 module mant_calc(
-    input logic [8:0] exp_diff,
-    input logic [23:0] mant_a, mant_b,
-    input logic sign_exp_diff, sa, sb,
+    input  logic [8:0]  exp_diff,
+    input  logic [23:0] mant_a, mant_b,
+    input  logic        sign_exp_diff,
+    input  logic        sa, sb,
     output logic [27:0] result_mant
 );
 
@@ -20,13 +21,25 @@ module mant_calc(
 
     // Route the inputs to small and large wires before processing
     always_comb begin
-        if(sign_exp_diff==1'b0) begin
-            small_mant = mant_a;
-            large_mant = mant_b;
+        if(exp_diff == 9'b0) begin // Ea == Eb
+            if(mant_a >= mant_b) begin
+                small_mant = mant_b;
+                large_mant = mant_a;
+            end
+            else begin
+                small_mant = mant_a;
+                large_mant = mant_b;
+            end
         end
-        else begin
-            small_mant = mant_b;
-            large_mant = mant_a;
+        else begin // Ea != Eb
+            if(sign_exp_diff==1'b1) begin // Ea > Eb
+                small_mant = mant_b;
+                large_mant = mant_a;
+            end
+            else begin // Ea < Eb
+                small_mant = mant_a;
+                large_mant = mant_b;
+            end
         end
     end
     
@@ -35,10 +48,10 @@ module mant_calc(
         // Shift to align the binary point
         small_mant_49 = {small_mant, 25'b0} >> exp_diff;
 
+        // Extract GRS bits
         G = small_mant_49[24];
         R = small_mant_49[23];
 
-        // Extract GRS bits
         if(exp_diff > 48) begin
             S = 1'b1;
         end

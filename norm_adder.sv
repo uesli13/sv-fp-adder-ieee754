@@ -13,21 +13,23 @@ module norm_adder(
     logic [4:0] zero_count;
 
     // Instantiate the Leading Zero Counter
-    lzc lzc_1 (
-        .mant_in(result_mant[26:0]),
+    lzc u_lzc (
+        .mant_in(result_mant),
         .zero_count(zero_count)
     );
 
     always_comb begin
         // Check for carry-out overflow from the addition
         if(result_mant[27] == 1'b1) begin
-            norm_mant = result_mant[27:1];
+            // Shift right by 1, but OR the shifted-out bit into the new sticky bit
+            norm_mant = {result_mant[27:2], result_mant[1] | result_mant[0]};
             norm_exp = 9'(max_exp) + 9'b1;
        end 
        // Otherwise, shift left by the number of leading zeros
        else begin
-            norm_mant = result_mant[26:0] << zero_count;
-            norm_exp = 9'(max_exp) - 9'(zero_count);
+            // Subtract zero_count by 1 because Bit 27 is a always 0
+            norm_mant = result_mant[26:0] << (zero_count - 1);
+            norm_exp = 9'(max_exp) - 9'(zero_count - 1);
        end
     end
 endmodule

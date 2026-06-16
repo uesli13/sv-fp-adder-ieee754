@@ -28,12 +28,12 @@ module round_adder (
         round_mant = 25'(base_mant);
 
         case(round)
-            IEEE_near: begin///////////////////////////NOT SURE NEEDS EXTRA CHECK
+            IEEE_near: begin
                 if(G==1'b1)begin
                     if(R == 1'b1 || S == 1'b1) begin
                         round_mant = 25'(base_mant) + 25'b1;
                     end
-                    else if (base_mant[0] == 1'b1) begin
+                    else if (base_mant[0] == 1'b1) begin // If LSB is 1 (odd), add 1 to make it even
                         round_mant = 25'(base_mant) + 25'b1;
                     end
                 end

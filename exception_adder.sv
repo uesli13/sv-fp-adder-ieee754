@@ -86,7 +86,7 @@ module exception_adder(
             inf_f = 1'b1;
         end
         // Exception 3: Infinity +- Infinity
-        else if ((num_interp(a) == INF && num_interp(b[30:0]) == INF)) begin
+        else if ((num_interp(a) == INF && num_interp(b) == INF)) begin
             result = {z_sign, z_num(INF)};
             
             if(a_sign != b_sign)
@@ -107,26 +107,84 @@ module exception_adder(
                 huge_f = 1'b1;
                 inexact_f = 1'b1;
 
+                // Handle overflow according to the rounding mode
                 if(round == IEEE_near) begin
                     result = {z_sign, z_num(INF)};
+                    inf_f = 1'b1;
                 end
                 else if (round == IEEE_zero) begin
                     result = {z_sign, z_num(MAX_NORM)};
                 end
-                else begin
-                    result = {z_sign, z_num(INF)}; /////////////////////////////NOT SURE PROLLY GONNA CHANGE
+                else if (round == IEEE_ninf) begin
+                    if(z_sign == 1'b0) begin
+                        result = {z_sign, z_num(MAX_NORM)};
+                    end
+                    else begin
+                        result = {z_sign, z_num(INF)};
+                        inf_f = 1'b1;
+                    end
+                end
+                else if (round == IEEE_pinf) begin
+                    if(z_sign == 1'b0) begin
+                        result = {z_sign, z_num(INF)};
+                        inf_f = 1'b1;
+                    end
+                    else begin
+                        result = {z_sign, z_num(MAX_NORM)};
+                    end
+                end
+                else if(round == IEEE_near_maxMag) begin
+                    result = {z_sign, z_num(INF)};
+                    inf_f = 1'b1;
                 end
             end
             // Case Underflow
             else if (underflow == 1'b1) begin
                 tiny_f = 1'b1;
                 inexact_f = 1'b1;
-                result = {z_sign, z_num(ZERO)};
+
+                // Handle underflow according to the rounding mode
+                if(round == IEEE_near) begin
+                    result = {z_sign, z_num(ZERO)};
+                    zero_f = 1'b1;
+                end
+                else if (round == IEEE_zero) begin
+                    result = {z_sign, z_num(ZERO)};
+                    zero_f = 1'b1;
+                end
+
+                else if (round == IEEE_ninf) begin
+                    if(z_sign == 1'b0) begin
+                        result = {z_sign, z_num(ZERO)};
+                        zero_f = 1'b1;
+                    end
+                    else begin
+                        result = {z_sign, z_num(MIN_NORM)};
+                    end
+                end
+                else if (round == IEEE_pinf) begin
+                    if(z_sign == 1'b0) begin
+                        result = {z_sign, z_num(MIN_NORM)};
+                    end
+                    else begin
+                        result = {z_sign, z_num(ZERO)};
+                        zero_f = 1'b1;
+                    end
+                end
+                else if (round == IEEE_near_maxMag) begin
+                    result = {z_sign, z_num(ZERO)};
+                    zero_f = 1'b1;
+                end
             end
             // Completely normal result!
             else begin
                 result = z_calc;
                 inexact_f = inexact_bit;
+                
+                if(result[30:0] == 31'b0) begin
+                    zero_f = 1'b1;
+                end
+
             end
         end
     end
