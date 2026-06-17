@@ -33,7 +33,7 @@ module exception_adder(
     } interp_t;
 
     // Function to classify a 32-bit number
-    function interp_t num_interp(input logic [31:0] in);
+    function automatic interp_t num_interp(input logic [31:0] in);
         logic [7:0]  exp = in[30:23];
 
         if(exp == 8'b0) begin
@@ -48,12 +48,12 @@ module exception_adder(
     endfunction
 
     // Function to generate standard payload values
-    function logic [30:0] z_num(interp_t type);
-        case(type)
+    function logic [30:0] z_num(interp_t num_type);
+        case(num_type)
             ZERO:     return 31'b0;
-            INF :     return {8{1'b1}, 23'b0};
+            INF :     return {{8{1'b1}}, 23'b0};
             MIN_NORM: return {8'b1, 23'b0};
-            MAX_NORM: return {7{1'b1}, 1'b0, 23{1'b1}};
+            MAX_NORM: return {{7{1'b1}}, 1'b0, {23{1'b1}}};
             default:  return 31'b0;
         endcase
     endfunction

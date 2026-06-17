@@ -5,6 +5,8 @@
 // Use it to instantiate the fp_addsub.sv module inside it
 // ---------------------------------------------------------------------------
 
+import round_pkg::*;
+
 module fp_adder_top (
     input logic [31:0] a, b,                            // 32-bit floating point inputs
     input logic [2:0] round,                            // rounding mode
@@ -24,7 +26,7 @@ module fp_adder_top (
     fp_adder adder (
         .a(a1),
         .b(b1),
-        .round(round1),
+        .round(round_mode_t'(round1)),
         .result(result1),
         .status(status1)
     );
