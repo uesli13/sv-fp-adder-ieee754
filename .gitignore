@@ -1,0 +1,13 @@
+# Questa / ModelSim simulation files
+sim/work/
+sim/transcript
+sim/*.wlf
+sim/*.cr.mti
+sim/*.mpf
+sim/_temp/
+sim/_tempmsg/
+sim/_vmake/
+sim/@_opt/
+*.qdb
+*.qpg
+*.qtl

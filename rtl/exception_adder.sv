@@ -75,32 +75,61 @@ module exception_adder(
         inexact_f = 1'b0;
 
         // Exception 1: Zero + Zero
-        if(num_interp(a) == ZERO && num_interp(b) == ZERO) begin 
-            result = {z_sign, z_num(ZERO)};
+        if(num_interp(a) == ZERO && num_interp(b) == ZERO) begin
+            if(a_sign == b_sign) begin
+                result = {a_sign, z_num(ZERO)};
+            end
+            else begin
+                if(round ==  IEEE_ninf) begin
+                    result = {1'b1, z_num(ZERO)};
+                end
+                else begin
+                    result = {1'b0, z_num(ZERO)};
+                end
+            end
             zero_f = 1'b1;
         end
-        // Exception 2: Infinity + Zero
-        else if ((num_interp(a) == ZERO  && num_interp(b) == INF ) ||
-                 (num_interp(a) == INF   && num_interp(b) == ZERO)) begin
-            result = {z_sign, z_num(INF)};
-            inf_f = 1'b1;
+        // Exception 2a: Zero + Infinity
+        else if(num_interp(a) == ZERO  && num_interp(b) == INF) begin
+            result = {b_sign, z_num(INF)};
+            inf_f  = 1'b1;
+        end
+        // Exception 2b: Infinity + Zero
+        else if (num_interp(a) == INF   && num_interp(b) == ZERO) begin
+            result = {a_sign, z_num(INF)};
+            inf_f  = 1'b1;  
         end
         // Exception 3: Infinity +- Infinity
         else if ((num_interp(a) == INF && num_interp(b) == INF)) begin
-            result = {z_sign, z_num(INF)};
-            
-            if(a_sign != b_sign)
+            if(a_sign != b_sign) begin
+                result = {1'b0, z_num(INF)};
                 nan_f = 1'b1;
-            else 
+            end
+            else begin
+                result = {a_sign, z_num(INF)};
                 inf_f = 1'b1;
+            end
         end
-        // Exception 4: Normal + Infinity
-        else if ((num_interp(a) == NORM && num_interp(b) == INF ) ||
-                 (num_interp(a) == INF  && num_interp(b) == NORM)) begin
-            result = {z_sign, z_num(INF)};
+        // Exception 4a: Normal + Infinity
+        else if (num_interp(a) == NORM && num_interp(b) == INF ) begin
+            result = {b_sign, z_num(INF)};
             inf_f = 1'b1;
         end
-        // Normal Numbers
+        // Exception 4b: Infinity + Normal
+        else if (num_interp(a) == INF  && num_interp(b) == NORM) begin
+            result = {a_sign, z_num(INF)};
+            inf_f = 1'b1;
+        end
+        //Exception 5a: Normal + Zero
+        else if(num_interp(a) == NORM && num_interp(b) == ZERO)begin
+            result = a;
+            if(result[30:0] == 31'b0) zero_f = 1'b1;
+        end
+        //Exception 5b: Zero + Normal
+        else if(num_interp(a) == ZERO && num_interp(b) == NORM) begin
+            result = b;
+            if(result[30:0] == 31'b0) zero_f = 1'b1;
+        end        // Normal Numbers
         else begin
             // Case Overflow
             if(overflow == 1'b1) begin
