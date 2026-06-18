@@ -1,23 +1,24 @@
-// ----------------------------------------------------------------------
-// tb_adder.sv
-// Reference testbench
-// Use the code above (always_comb block) to habdle the exception cases on hardfloat
-// ----------------------------------------------------------------------
+// ============================================================================
+// Module:      tb_adder
+// Description: Testbench for the floating-point adder. 
+//              It generates random and corner-case inputs, applies them to the DUT,
+//              and compares the DUT's output against a reference model (Hardfloat).
+//              The testbench also includes SVA assertions to check for status bit correctness.
+// ============================================================================
 
 `timescale 1ns/1ps
 
 module tb_adder ();
     logic [31:0] result;        // result = a + b
-    logic [7:0] status;         // Status bits for the result
+    logic [7:0]  status;        // Status bits for the result
     logic [31:0] a, b;
-    logic [2:0] round;            // Rounding mode
-    bit clk, resetn;            // Clock and reset signals
+    logic [2:0]  round;         // Rounding mode
+    bit          clk, resetn;   // Clock and reset signals
 
-    // -------------------  Testbench variables -------------------
+    // =========================================================================
+    // Instantiation of the DUT 
+    // =========================================================================
 
-
-
-    // -------------------  Instantiate the DUT -------------------
     fp_adder_top dut (
         .a(a),
         .b(b),
@@ -28,17 +29,40 @@ module tb_adder ();
         .status(status)
     );
 
-    // ------------------- Clock Generation -------------------
+    // =========================================================================
+    // SVA Binding
+    // =========================================================================
+
+    // Bind the immediate assertions
+    bind dut test_status_bits assert_bits_inst (
+        .resetn(resetn),
+        .status(status)
+    );
+
+    // Bind the concurrent assertions
+    bind dut test_status_z_combinations assert_combos_inst (
+        .clk(clk),
+        .status(status),
+        .result(result),
+        .a(a),
+        .b(b)
+    );
+
+    // =========================================================================
+    // Clock Generation
+    // =========================================================================
     always #5 clk = ~clk;
 
-	// -------------------	Instantiate the hardfloat reference model -------------------
+    // =========================================================================
+	// Instantiattion and proper wiring of the hardfloat reference model
+    // =========================================================================
 	logic [31:0] results_hf;	// The results_hf 32-bit floatinf point number (after the recoding in Hardfloat), will be translated to the results_ref
 	logic [31:0] results_ref;	// This is the golden reference value to be compared with the DUT result
-	logic [2:0] rnd_hf;
+	logic [2:0]  rnd_hf;
 	logic [31:0] a_hf, b_hf;	// These will be the floating point 32-bit inputs to the Hardfloat rec modules
 
     logic [32:0] recFN_a, recFN_b, recFN_result; // Intermediate 33-bit wires for the recoded format
-    logic [4:0] exceptionFlags_hf;               // Exception flags from Hardfloat
+    logic [4:0]  exceptionFlags_hf;               // Exception flags from Hardfloat
 
     assign rnd_hf = round;
 
@@ -71,7 +95,10 @@ module tb_adder ();
         .out(results_hf)
     );
 
-	// -------------------	Update the reference model inputs -------------------
+    // =========================================================================
+    // Update the reference model inputs and output to match our IEEE compliance 
+    // =========================================================================
+
 	always_comb begin
 		// If a is NaN => Inf
 		if(a[30:23] == '1) begin
@@ -112,9 +139,10 @@ module tb_adder ();
 			results_ref = results_hf;
 	end
 
-    // -------------------  Stimulus -------------------
+    // =========================================================================
+    // Verification Variables
+    // =========================================================================
 
-    // -------------------  Verification Variables -------------------
     int total_random_tests = 0;
     int success_random_tests = 0;
     int total_corner_tests = 0;
@@ -129,13 +157,16 @@ module tb_adder ();
 
     test_type_e current_test_type = NONE;
 
-    // -------------------  Alignment Pipeline (Shift Registers) -------------------
+    // =========================================================================
+    // Alignment Pipeline (Shift Registers) to delay the reference model's output to match the DUT's 2-cycle latency
+    // =========================================================================
+    
     logic [31:0] ref_d1, ref_d2;
     logic [31:0] a_d1, a_d2; 
     logic [31:0] b_d1, b_d2;
     logic [2:0]  round_d1, round_d2;
-    test_type_e type_d1, type_d2;
-    logic valid_d1, valid_d2;
+    test_type_e  type_d1, type_d2;
+    logic        valid_d1, valid_d2;
 
     // Shift data through the pipeline at every positive edge
     always_ff @(posedge clk or negedge resetn) begin
@@ -151,7 +182,7 @@ module tb_adder ();
             type_d1 <= current_test_type;
             valid_d1 <= 1'b1;        
             
-            // Stage 2 delay (This now aligns perfectly with the DUT's 2-cycle result)
+            // Stage 2 delay
             ref_d2 <= ref_d1;
             a_d2 <= a_d1;
             b_d2 <= b_d1;
@@ -161,8 +192,10 @@ module tb_adder ();
         end
     end
 
+    // =========================================================================
+    // Self-Checking Monitor
+    // =========================================================================
 
-    // -------------------  Self-Checking Monitor -------------------
     // Check results on the negative edge, right after the DUT has updated its outputs
     always @(negedge clk) begin
         if (valid_d2 && type_d2 != NONE) begin
@@ -178,28 +211,27 @@ module tb_adder ();
         end
     end
 
+    // =========================================================================
+    // Stimulus Tasks
+    // =========================================================================
 
-
-    // -------------------  Stimulus Tasks -------------------
-
+    // Task that generates random tests
     task run_random_tests(int num_tests);
         current_test_type = RANDOM;
         
         for (int i = 0; i < num_tests; i++) begin
-            @(negedge clk); // Change inputs on negative edge as recommended
+            @(negedge clk); // Change inputs on negative edge
             
             // Generate random 32-bit inputs
             a = $urandom();
             b = $urandom();
             
-            // There are 5 rounding modes (000 to 100), so we limit the random range to 0-4
             round = $urandom_range(0, 4); 
             
             total_random_tests++;
         end
     endtask
 
-    // ------------------- Corner Case Generation -------------------
     //  Enum for the 10 specific corner cases
     typedef enum bit [3:0] {
         NEG_NAN, POS_NAN, 
@@ -235,6 +267,7 @@ module tb_adder ();
         endcase
     endfunction
 
+    // Task that generates corner-case tests
     task run_corner_tests();
         current_test_type = CORNER;
         
@@ -260,19 +293,23 @@ module tb_adder ();
     endtask
 
 
+    // =========================================================================
+    // Main Execution
+    // =========================================================================
 
-    // -------------------  Main Execution -------------------
     initial begin
-        // Initialize Everything
-        clk = 0;
+        // Initialize variables
+        clk    = 0;
         resetn = 0;
-        a = 0; b = 0; round = 0;
+        a      = 0;
+        b      = 0;
+        round  = 0;
         
         // Hold reset for a few cycles, then release
         #15; 
         resetn = 1;
         
-        // Run Random 1000 Tests
+        // Run 1000 Random Tests
         $display("Starting Random Tests...");
         run_random_tests(1000);
         
@@ -280,7 +317,7 @@ module tb_adder ();
         $display("Starting Corner Tests...");
         run_corner_tests();
 
-        // Wait a few cycles for the final tests to flush through the 2-cycle pipeline
+        // Wait 5 cycles for the final tests to flush through the 2-cycle pipeline
         current_test_type = NONE;
         repeat(5) @(posedge clk); 
         
@@ -293,7 +330,7 @@ module tb_adder ();
         $display("Corner Tests: %0d / %0d SUCCESSFUL", success_corner_tests, total_corner_tests);
         $display("=================================================");
         
-        $stop; // End simulation
+        $stop;
     end
 
 endmodule

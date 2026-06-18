@@ -1,5 +1,5 @@
 // ============================================================================
-// Module: mant_calc
+// Module:      mant_calc
 // Description: Aligns the mantissas based on exponent difference, extracts 
 //              Guard, Round, and Sticky (GRS) bits, and performs the final 
 //              addition or subtraction of the 27-bit aligned mantissas.

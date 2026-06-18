@@ -1,5 +1,5 @@
 // ============================================================================
-// Package: round_pkg
+// Package:     round_pkg
 // Description: Defines the IEEE-754 rounding modes as an enumerated type.
 // ============================================================================
 

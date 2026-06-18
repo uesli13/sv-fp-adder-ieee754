@@ -1,11 +1,12 @@
 // ============================================================================
-// Module: fp_adder
-// Description: Main combinational core of the 32-bit single-precision 
+// Module:      fp_adder
+// Description: Main combinational module of the 32-bit single-precision 
 //              floating-point adder. It coordinates the data path through 
 //              sign calculation, exponent comparison, mantissa addition, 
 //              normalization, rounding, and exception handling to produce 
 //              the final 32-bit result and an 8-bit status flag.
 // ============================================================================
+
 import round_pkg::*;
 
 module fp_adder(
@@ -23,7 +24,7 @@ module fp_adder(
     } float_t;
 
     float_t float_a, float_b; // Structured versions of operands a and b
-    logic z_sign;             // Calculated sign of the final result (Z)
+    logic z_sign;             // Calculated sign of the final result
 
     // Cast the raw 32-bit inputs into our structured format
     assign float_a = a;
@@ -42,7 +43,7 @@ module fp_adder(
         else begin
             //If operants have different signs, the result takes the largest magnitudes' sign
 
-            //First compare the exponents 
+            //First, compare the exponents 
             if (float_a.exp > float_b.exp) begin
                 z_sign = float_a.sign;
             end
@@ -160,7 +161,6 @@ module fp_adder(
     .huge_f      (huge_f),
     .inexact_f   (inexact_f)
 );
-
 
     // =========================================================================
     // Post-Round Normalization

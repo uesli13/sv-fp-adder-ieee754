@@ -1,9 +1,8 @@
-// ----------------------------------------------------------------------------
-// Design Name:    fp_addsub_top
-// Based on IEEE-754 standard
-// This is the top level module (wrapper) for the floating point add/sub unit.
-// Use it to instantiate the fp_addsub.sv module inside it
-// ---------------------------------------------------------------------------
+// ============================================================================
+// Module:      fp_adder_top
+// Description: This is the top level module (wrapper) for the floating point 
+//              add/sub unit.
+// ============================================================================
 
 import round_pkg::*;
 
@@ -21,8 +20,7 @@ module fp_adder_top (
     logic [31:0] result1;
     logic [7:0] status1;
 
-    // DO THE INSTANTIATION HERE
-    // E.G.
+    // Combinational adder module instantiation
     fp_adder adder (
         .a(a1),
         .b(b1),

@@ -1,5 +1,5 @@
 // ============================================================================
-// Module: lzc (Leading Zero Counter)
+// Module:      lzc (Leading Zero Counter)
 // Description: Scans a 28-bit input vector from MSB to LSB and counts the 
 //              number of consecutive zeros before the first '1' is found.
 // ============================================================================

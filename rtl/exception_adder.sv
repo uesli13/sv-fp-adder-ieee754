@@ -1,11 +1,11 @@
-import round_pkg::*;
-
 // ============================================================================
-// Module: exception_adder
+// Module:      exception_adder
 // Description: Final stage of the FPU. Handles special IEEE-754 cases and 
 //              overrides the calculated result if an exception
 //              (Overflow/Underflow) occurs.
 // ============================================================================
+
+import round_pkg::*;
 
 module exception_adder(
     input  logic [31:0] a,
@@ -23,7 +23,7 @@ module exception_adder(
     output logic        huge_f,
     output logic        inexact_f
 );
-
+    // enumeration for interpreting the type of number
     typedef enum logic [2:0] {
         ZERO     = 3'b000,
         INF      = 3'b001,

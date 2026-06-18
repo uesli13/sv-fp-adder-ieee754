@@ -1,5 +1,5 @@
 // ============================================================================
-// Module: exponent_calc
+// Module:      exponent_calc
 // Description: Compares the 8-bit exponents of the two floating-point operands.
 //              Outputs the larger exponent, the absolute difference between 
 //              them, and a flag indicating which operand had the larger exponent.

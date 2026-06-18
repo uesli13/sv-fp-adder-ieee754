@@ -1,10 +1,10 @@
-import round_pkg::*;
-
 // ============================================================================
-// Module: round_adder
+// Module:      round_adder
 // Description: Applies IEEE-754 rounding rules to the normalized 27-bit mantissa.
 //              Outputs a 25-bit mantissa to catch potential overflow from rounding.
 // ============================================================================
+
+import round_pkg::*;
 
 module round_adder (
     input  round_mode_t round,

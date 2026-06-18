@@ -1,5 +1,5 @@
 // ============================================================================
-// Module: norm_adder
+// Module:      norm_adder
 // Description: Normalizes the 28-bit mantissa by shifting it right (if overflow)
 //              or left (if underflow), and adjusts the exponent accordingly.
 // ============================================================================
