@@ -195,7 +195,7 @@ module fp_adder(
         end
 
         // Overflow check
-        if(post_norm_exp > 9'd255) begin
+        if(post_norm_exp >= 9'd255) begin
             overflow = 1'b1;
         end
 
