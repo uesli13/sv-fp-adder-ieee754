@@ -317,6 +317,13 @@ module tb_adder ();
         $display("Starting Corner Tests...");
         run_corner_tests();
 
+        // Force an overflow
+        a     = 32'h7F7FFFFF;    // MaxNormal
+        b     = 32'h7F7FFFFF;
+        round = 3'b001;
+        repeat(4) @(posedge clk);
+
+        
         // Wait 5 cycles for the final tests to flush through the 2-cycle pipeline
         current_test_type = NONE;
         repeat(5) @(posedge clk); 
